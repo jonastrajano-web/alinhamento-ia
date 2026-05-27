@@ -48,3 +48,4 @@ Cole o prompt no Claude → receba briefing + texto de publicação
 ## Projeto
 
 Desenvolvido para o time de Pessoas da Seazone — **27/05/2026**.
+

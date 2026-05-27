@@ -2,13 +2,15 @@ const SUPABASE_URL = 'https://osllygjnozqlspspmfrt.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9zbGx5Z2pub3pxbHNwc3BtZnJ0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk2Njc1MjUsImV4cCI6MjA5NTI0MzUyNX0.Yr5kgK5Htcobmt8X02cutdnZ1rgZT4wE02wTpurO0x8';
 const db = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-const SENHA_DASHBOARD = 'seazone2026';
-
 function verificarAcesso() {
   const autenticado = sessionStorage.getItem('rh_autenticado');
   if (!autenticado) {
     window.location.href = 'login.html';
   }
+}
+
+function getNomeUsuario() {
+  return sessionStorage.getItem('rh_nome') || 'Seazone RH';
 }
 
 function formatarData(data) {

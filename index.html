@@ -33,7 +33,7 @@
     <a href="index.html" class="header-logo"><img src="logo-seazone.png" alt="Seazone"></a>
     <div class="header-nav">
       <a href="metricas.html" class="btn btn-secondary btn-sm">📊 Métricas</a>
-      <span class="header-user">Seazone RH</span>
+      <span class="header-user" id="nomeUsuario">Seazone RH</span>
       <button class="btn btn-secondary btn-sm" onclick="sair()">Sair</button>
     </div>
   </header>
@@ -67,6 +67,7 @@
   <script src="config.js"></script>
   <script>
     verificarAcesso();
+    document.getElementById('nomeUsuario').textContent = getNomeUsuario();
 
     let todasVagas = [];
     let filtroAtual = 'todas';

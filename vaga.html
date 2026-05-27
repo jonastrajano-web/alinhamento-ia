@@ -38,6 +38,9 @@
           <button class="btn btn-secondary btn-sm" id="btnCopiarLink" onclick="copiarLinkGestor()">
             📋 Copiar link
           </button>
+          <button class="btn btn-secondary btn-sm" onclick="gerarPDF()">
+            📄 Exportar PDF
+          </button>
           <button class="btn btn-sm" style="background: var(--danger-light); color: var(--danger); border: 1px solid var(--danger);"
             onclick="excluirVaga()">
             🗑️ Excluir
@@ -425,67 +428,7 @@
         mostrarToast('O gestor ainda não preencheu o formulário.', 'erro');
         return;
       }
-
-      const f = formData;
-      const v = vagaData;
-      const senioridade = { estagio: 'Estágio', junior: 'Júnior', pleno: 'Pleno', senior: 'Sênior' };
-      const formatos = { 'assíncrono': 'Desafio assíncrono', live_case: 'Live Case' };
-
-      const prompt = `Você é um especialista em recrutamento da Seazone.
-
-CONTEXTO IMPORTANTE — ESTRUTURA DA VAGA NA INHIRE:
-O que é FIXO na InHire (NÃO gerar): "Como é fazer parte da equipe Seazone?", incentivos, parcerias, sobre a empresa e cultura.
-
-O que é ALTERADO por vaga (gere apenas isso):
-1. Título da vaga e modalidade/localização
-2. O que nosso time de [nome do time] faz?
-3. O que você vai fazer
-4. O que esperamos de você
-5. Você se destaca, se tiver
-6. Sobre a contratação (apenas se diferente do padrão: PJ + Remoto)
-
----
-
-INFORMAÇÕES DA VAGA:
-Título: ${v.titulo}
-Cargo divulgação: ${v.cargo_divulgacao || v.titulo}
-Senioridade: ${senioridade[f.b3_senioridade] || f.b3_senioridade}
-Formato avaliação: ${formatos[f.d3_formato] || f.d3_formato}
-
-PROBLEMA QUE RESOLVE:
-${f.b1_problema}
-
-FUNÇÕES E RESPONSABILIDADES:
-${f.b2_funcoes}
-
-CONHECIMENTOS E HABILIDADES:
-${f.c1_habilidades}
-
-FORMAÇÕES VÁLIDAS:
-${f.c2_formacoes}
-
-EXPERIÊNCIA MÍNIMA:
-${f.c3_experiencia}
-
-${f.c4_eliminatorios ? `REQUISITOS ELIMINATÓRIOS:\n${f.c4_eliminatorios}\n` : ''}
-CONTEXTO DO TIME:
-${f.a1_estrutura_time}
-
-OBJETIVOS DO TIME:
-${f.a2_objetivos_time}
-
-${compData && compData.notas_recrutador ? `NOTAS DO RECRUTADOR:\n${compData.notas_recrutador}\n` : ''}
----
-
-REGRAS:
-- Gere SOMENTE as seções que mudam — nunca repita o que é fixo na InHire
-- Não invente informações — use apenas o que foi fornecido
-- Tom direto, humano, sem corporativês
-- IA First SEMPRE presente nos diferenciais: "Familiaridade com uso de IA para [aplicação específica]"
-- Siga o padrão de emojis da Seazone (💼 🔍 🤩)
-- O texto será inserido manualmente na InHire pelo recrutador`;
-
-      document.getElementById('textoPromptPublicacao').textContent = prompt;
+      document.getElementById('textoPromptPublicacao').textContent = gerarTextoPromptPublicacao();
       document.getElementById('promptPublicacao').style.display = 'block';
     }
 
@@ -494,81 +437,7 @@ REGRAS:
         mostrarToast('O gestor ainda não preencheu o formulário.', 'erro');
         return;
       }
-
-      const f = formData;
-      const v = vagaData;
-      const c = compData;
-      const senioridade = { estagio: 'Estágio', junior: 'Júnior', pleno: 'Pleno', senior: 'Sênior' };
-
-      const prompt = `Você é um especialista em recrutamento da Seazone.
-Com base nas informações abaixo, gere um briefing interno completo para o recrutador usar durante o processo seletivo.
-
----
-
-INFORMAÇÕES DA VAGA:
-Cargo: ${v.titulo}
-Senioridade: ${senioridade[f.b3_senioridade] || f.b3_senioridade}
-
-Problema que resolve: ${f.b1_problema}
-Funções: ${f.b2_funcoes}
-Conhecimentos e habilidades: ${f.c1_habilidades}
-Formações válidas: ${f.c2_formacoes}
-Experiência mínima: ${f.c3_experiencia}
-${f.c4_eliminatorios ? `Requisitos eliminatórios: ${f.c4_eliminatorios}` : ''}
-
-Contexto do time: ${f.a1_estrutura_time}
-Objetivos do time: ${f.a2_objetivos_time}
-Desafio atual do time: ${f.a3_desafio_time}
-Motivo da abertura: ${f.a4_motivo_abertura}
-${f.a5_substituicao ? `Substituição: ${f.a5_substituicao}` : ''}
-
-${c ? `CRITÉRIOS DO ALINHAMENTO (recrutador):
-Inegociáveis: ${c.inegociaveis || 'Não preenchido'}
-IA First aplicado: ${c.ia_first_aplicacao || 'Não preenchido'}
-Red flags: ${c.red_flags || 'Não preenchido'}
-Notas: ${c.notas_recrutador || 'Não preenchido'}` : ''}
-
----
-
-VALORES CULTURAIS FIXOS DA SEAZONE:
-Soft Skills Fundamentais (obrigatórias): Comunicação | Coragem e Iniciativa | Colaboração
-Valores: Sangue nos Olhos | Foco em Fatos e Dados | Priorizar e Simplificar | Proatividade
-IA First: candidato ideal usa IA como ferramenta de trabalho no dia a dia — inegociável.
-
-Soft Skills específicas priorizadas para essa vaga:
-${f.b4_skills ? f.b4_skills.join(' | ') : 'Não informado'}
-
----
-
-GERE AS SEGUINTES SEÇÕES:
-
-1. CONTEXTO DA VAGA
-Resumo objetivo: o que é a vaga, por que abriu e qual problema resolve.
-
-2. PERSONA DO CANDIDATO IDEAL
-Descrever em 4 dimensões:
-- Quem é: background, trajetória típica, de onde vem
-- Como pensa: mindset, postura diante de problemas
-- Como trabalha: dinâmica, autonomia, ritmo
-- Como se conecta com a Seazone: onde os valores aparecem naturalmente nessa pessoa
-
-3. O QUE OLHAR NO CURRÍCULO
-5 camadas: Eliminatórios | Formação | Experiências que validam | Sinais positivos | Sinais de alerta
-
-4. PALAVRAS-CHAVE PARA TRIAGEM NO INHIRE
-Cargos, empresas, setores, ferramentas e formações relevantes. Contexto importa.
-
-5. RED FLAGS — PERFIS QUE NÃO FUNCIONAM
-O que elimina imediatamente.
-
-6. ORIENTAÇÕES PARA O FIT CULTURAL
-- Aprofundar nas soft skills priorizadas: ${f.b4_skills ? f.b4_skills.join(', ') : 'conforme formulário'}
-- Validação IA First obrigatória: como usa, quais ferramentas, como aplica
-- Pontos de atenção baseados nos red flags
-
-REGRAS: Tom interno e direto. Não inventar. Persona descritiva. Checklist de currículo prático.`;
-
-      document.getElementById('textoPromptBriefing').textContent = prompt;
+      document.getElementById('textoPromptBriefing').textContent = gerarTextoPromptBriefing();
       document.getElementById('promptBriefing').style.display = 'block';
     }
 
@@ -729,6 +598,282 @@ Notas do recrutador: ${n(c.notas_recrutador)}
       } else {
         mostrarToast('Erro ao atualizar status.', 'erro');
       }
+    }
+
+    function gerarTextoPromptPublicacao() {
+      if (!formData) return '';
+      const f = formData;
+      const v = vagaData;
+      const c = compData;
+      const senioridade = { estagio: 'Estágio', junior: 'Júnior', pleno: 'Pleno', senior: 'Sênior' };
+      const formatos = { 'assíncrono': 'Desafio assíncrono', live_case: 'Live Case' };
+      return `Você é um especialista em recrutamento da Seazone.
+
+CONTEXTO IMPORTANTE — ESTRUTURA DA VAGA NA INHIRE:
+O que é FIXO na InHire (NÃO gerar): "Como é fazer parte da equipe Seazone?", incentivos, parcerias, sobre a empresa e cultura.
+
+O que é ALTERADO por vaga (gere apenas isso):
+1. Título da vaga e modalidade/localização
+2. O que nosso time de [nome do time] faz?
+3. O que você vai fazer
+4. O que esperamos de você
+5. Você se destaca, se tiver
+6. Sobre a contratação (apenas se diferente do padrão: PJ + Remoto)
+
+---
+
+INFORMAÇÕES DA VAGA:
+Título: ${v.titulo}
+Cargo divulgação: ${v.cargo_divulgacao || v.titulo}
+Senioridade: ${senioridade[f.b3_senioridade] || f.b3_senioridade}
+Formato avaliação: ${formatos[f.d3_formato] || f.d3_formato || 'Não informado'}
+
+PROBLEMA QUE RESOLVE:
+${f.b1_problema}
+
+FUNÇÕES E RESPONSABILIDADES:
+${f.b2_funcoes}
+
+CONHECIMENTOS E HABILIDADES:
+${f.c1_habilidades}
+
+FORMAÇÕES VÁLIDAS:
+${f.c2_formacoes}
+
+EXPERIÊNCIA MÍNIMA:
+${f.c3_experiencia}
+
+${f.c4_eliminatorios ? `REQUISITOS ELIMINATÓRIOS:\n${f.c4_eliminatorios}\n` : ''}CONTEXTO DO TIME:
+${f.a1_estrutura_time}
+
+OBJETIVOS DO TIME:
+${f.a2_objetivos_time}
+
+${c && c.notas_recrutador ? `NOTAS DO RECRUTADOR:\n${c.notas_recrutador}\n` : ''}---
+
+REGRAS:
+- Gere SOMENTE as seções que mudam — nunca repita o que é fixo na InHire
+- Não invente informações — use apenas o que foi fornecido
+- Tom direto, humano, sem corporativês
+- IA First SEMPRE presente nos diferenciais: "Familiaridade com uso de IA para [aplicação específica]"
+- Siga o padrão de emojis da Seazone (💼 🔍 🤩)
+- O texto será inserido manualmente na InHire pelo recrutador`;
+    }
+
+    function gerarTextoPromptBriefing() {
+      if (!formData) return '';
+      const f = formData;
+      const v = vagaData;
+      const c = compData;
+      const senioridade = { estagio: 'Estágio', junior: 'Júnior', pleno: 'Pleno', senior: 'Sênior' };
+      return `Você é um especialista em recrutamento da Seazone.
+Com base nas informações abaixo, gere um briefing interno completo para o recrutador usar durante o processo seletivo.
+
+---
+
+INFORMAÇÕES DA VAGA:
+Cargo: ${v.titulo}
+Senioridade: ${senioridade[f.b3_senioridade] || f.b3_senioridade}
+
+Problema que resolve: ${f.b1_problema}
+Funções: ${f.b2_funcoes}
+Conhecimentos e habilidades: ${f.c1_habilidades}
+Formações válidas: ${f.c2_formacoes}
+Experiência mínima: ${f.c3_experiencia}
+${f.c4_eliminatorios ? `Requisitos eliminatórios: ${f.c4_eliminatorios}` : ''}
+
+Contexto do time: ${f.a1_estrutura_time}
+Objetivos do time: ${f.a2_objetivos_time}
+Desafio atual do time: ${f.a3_desafio_time}
+Motivo da abertura: ${f.a4_motivo_abertura}
+${f.a5_substituicao ? `Substituição: ${f.a5_substituicao}` : ''}
+
+${c ? `CRITÉRIOS DO ALINHAMENTO (recrutador):
+Inegociáveis: ${c.inegociaveis || 'Não preenchido'}
+IA First aplicado: ${c.ia_first_aplicacao || 'Não preenchido'}
+Red flags: ${c.red_flags || 'Não preenchido'}
+Notas: ${c.notas_recrutador || 'Não preenchido'}` : ''}
+
+---
+
+VALORES CULTURAIS FIXOS DA SEAZONE:
+Soft Skills Fundamentais (obrigatórias): Comunicação | Coragem e Iniciativa | Colaboração
+Valores: Sangue nos Olhos | Foco em Fatos e Dados | Priorizar e Simplificar | Proatividade
+IA First: candidato ideal usa IA como ferramenta de trabalho no dia a dia — inegociável.
+
+Soft Skills específicas priorizadas para essa vaga:
+${f.b4_skills ? f.b4_skills.join(' | ') : 'Não informado'}
+
+---
+
+GERE AS SEGUINTES SEÇÕES:
+
+1. CONTEXTO DA VAGA
+Resumo objetivo: o que é a vaga, por que abriu e qual problema resolve.
+
+2. PERSONA DO CANDIDATO IDEAL
+Descrever em 4 dimensões:
+- Quem é: background, trajetória típica, de onde vem
+- Como pensa: mindset, postura diante de problemas
+- Como trabalha: dinâmica, autonomia, ritmo
+- Como se conecta com a Seazone: onde os valores aparecem naturalmente nessa pessoa
+
+3. O QUE OLHAR NO CURRÍCULO
+5 camadas: Eliminatórios | Formação | Experiências que validam | Sinais positivos | Sinais de alerta
+
+4. PALAVRAS-CHAVE PARA TRIAGEM NO INHIRE
+Cargos, empresas, setores, ferramentas e formações relevantes. Contexto importa.
+
+5. RED FLAGS — PERFIS QUE NÃO FUNCIONAM
+O que elimina imediatamente.
+
+6. ORIENTAÇÕES PARA O FIT CULTURAL
+- Aprofundar nas soft skills priorizadas: ${f.b4_skills ? f.b4_skills.join(', ') : 'conforme formulário'}
+- Validação IA First obrigatória: como usa, quais ferramentas, como aplica
+- Pontos de atenção baseados nos red flags
+
+REGRAS: Tom interno e direto. Não inventar. Persona descritiva. Checklist de currículo prático.`;
+    }
+
+    function gerarPDF() {
+      const v = vagaData;
+      const f = formData || {};
+      const c = compData || {};
+
+      const motivos = { substituicao: 'Substituição', aumento_quadro: 'Aumento de quadro', nova_area: 'Nova área ou função' };
+      const senioridade = { estagio: 'Estágio', junior: 'Júnior', pleno: 'Pleno', senior: 'Sênior' };
+      const formatos = { 'assíncrono': 'Desafio assíncrono', live_case: 'Live Case' };
+      const prioridades = { alta: '🔴 Alta', media: '🟡 Média', normal: '🟢 Normal' };
+      const n = (v) => v || '—';
+
+      const promptPublicacao = gerarTextoPromptPublicacao();
+      const promptBriefing = gerarTextoPromptBriefing();
+      const briefingGerado = document.getElementById('briefingGerado').value;
+
+      const esc = (t) => String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+      const ef = (v) => `<span style="color:#bbb;font-style:italic">—</span>` || esc(n(v));
+      const campo = (label, value) => `
+        <div style="margin-bottom:10px;">
+          <div style="font-weight:600;color:#444;font-size:12px;text-transform:uppercase;letter-spacing:.4px;margin-bottom:2px;">${label}</div>
+          <div style="color:#1a1a2e;">${value ? esc(value) : '<span style="color:#bbb;font-style:italic">—</span>'}</div>
+        </div>`;
+
+      const html = `<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>Alinhamento — ${esc(v.titulo)}</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI', Arial, sans-serif; font-size: 13px; color: #1a1a2e; line-height: 1.6; padding: 32px; max-width: 860px; margin: 0 auto; }
+  h1 { font-size: 22px; color: #0D47A1; font-weight: 800; }
+  h2 { font-size: 13px; font-weight: 700; color: #0D47A1; text-transform: uppercase; letter-spacing: .6px; border-bottom: 2px solid #0D47A1; padding-bottom: 4px; margin: 28px 0 14px; }
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 0 24px; }
+  .badge { display:inline-block; padding:3px 12px; border-radius:20px; font-size:11px; font-weight:700; background:#e3f2fd; color:#0D47A1; }
+  .pre { white-space:pre-wrap; background:#f8f9ff; border:1px solid #e0e0e0; border-radius:6px; padding:14px; font-size:12px; font-family:'Courier New',monospace; line-height:1.6; margin-top:8px; }
+  .meta { color:#777; font-size:12px; margin-top:4px; }
+  .print-btn { margin-top:32px; text-align:center; }
+  .print-btn button { padding:10px 28px; background:#0D47A1; color:white; border:none; border-radius:6px; cursor:pointer; font-size:14px; font-weight:600; }
+  @media print {
+    body { padding: 16px; }
+    .print-btn { display: none; }
+    h2 { page-break-after: avoid; }
+    .pre { page-break-inside: avoid; }
+  }
+</style>
+</head>
+<body>
+
+<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px;">
+  <h1>${esc(v.titulo)}</h1>
+  <span class="badge">${esc(STATUS_LABEL[v.status])}</span>
+</div>
+<div class="meta">
+  ${v.cargo_divulgacao ? `Cargo de divulgação: ${esc(v.cargo_divulgacao)} · ` : ''}
+  ${v.email_gestor ? `Gestor: ${esc(v.email_gestor)} · ` : ''}
+  Criado em: ${new Date(v.criado_em).toLocaleDateString('pt-BR')}
+</div>
+
+${formData ? `
+<h2>A — Contexto do time</h2>
+<div class="grid2">
+  ${campo('Como está o time hoje', f.a1_estrutura_time)}
+  ${campo('Objetivos do time (6 meses)', f.a2_objetivos_time)}
+</div>
+${campo('Maior desafio atual', f.a3_desafio_time)}
+<div class="grid2">
+  ${campo('Motivo da abertura', motivos[f.a4_motivo_abertura])}
+  ${f.a4_motivo_abertura === 'substituicao' ? campo('Substituição de', f.a5_substituicao) : ''}
+  ${campo('Divulgação confidencial', f.a6_confidencial ? 'Sim — restrita' : 'Não')}
+</div>
+
+<h2>B — A vaga</h2>
+${campo('Problema que resolve', f.b1_problema)}
+${campo('Funções e responsabilidades', f.b2_funcoes)}
+<div class="grid2">
+  ${campo('Senioridade', senioridade[f.b3_senioridade])}
+  ${campo('Soft skills priorizadas', f.b4_skills && f.b4_skills.length ? f.b4_skills.join(' · ') : null)}
+</div>
+
+<h2>C — Candidato ideal</h2>
+${campo('Conhecimentos e habilidades', f.c1_habilidades)}
+<div class="grid2">
+  ${campo('Formações válidas', f.c2_formacoes)}
+  ${campo('Experiência mínima', f.c3_experiencia)}
+</div>
+${campo('Requisitos eliminatórios', f.c4_eliminatorios)}
+
+<h2>D — Estrutura do processo</h2>
+<div class="grid2">
+  ${campo('Responsável entrevista técnica/final', f.d1_responsavel_entrevista)}
+  ${campo('Responsável desafio', f.d2a_responsavel_desafio)}
+  ${campo('Prazo do desafio', f.d2b_prazo_desafio ? f.d2b_prazo_desafio + ' dias' : null)}
+  ${campo('Link do desafio', f.d2c_link_desafio)}
+  ${campo('Formato', formatos[f.d3_formato])}
+</div>
+` : '<p style="color:#aaa;font-style:italic;margin-top:16px;">Formulário do gestor ainda não preenchido.</p>'}
+
+${(c && (c.inegociaveis || c.ia_first_aplicacao || c.red_flags || c.estrutura_processo || c.notas_recrutador || c.prioridade)) ? `
+<h2>Complemento do recrutador</h2>
+<div class="grid2">
+  ${campo('Prioridade da vaga', c.prioridade ? prioridades[c.prioridade] : '🟢 Normal')}
+  ${campo('Aplicação IA First', c.ia_first_aplicacao)}
+</div>
+${campo('Critérios inegociáveis', c.inegociaveis)}
+${campo('Red flags', c.red_flags)}
+${campo('Estrutura do processo validada', c.estrutura_processo)}
+${campo('Notas do recrutador', c.notas_recrutador)}
+` : ''}
+
+${promptPublicacao ? `
+<h2>🤖 Prompt — Texto de publicação</h2>
+<div class="pre">${esc(promptPublicacao)}</div>
+` : ''}
+
+${promptBriefing ? `
+<h2>🤖 Prompt — Briefing interno</h2>
+<div class="pre">${esc(promptBriefing)}</div>
+` : ''}
+
+${briefingGerado ? `
+<h2>📝 Briefing gerado pelo Claude</h2>
+<div class="pre">${esc(briefingGerado)}</div>
+` : ''}
+
+<div class="print-btn">
+  <button onclick="window.print()">🖨️ Imprimir / Salvar como PDF</button>
+</div>
+
+</body>
+</html>`;
+
+      const win = window.open('', '_blank');
+      if (!win) {
+        mostrarToast('Permita pop-ups para exportar o PDF.', 'erro');
+        return;
+      }
+      win.document.write(html);
+      win.document.close();
     }
 
     async function excluirVaga() {

@@ -20,7 +20,7 @@
           <input type="password" id="senha" class="form-control" placeholder="Digite a senha" autofocus>
           <p id="erroSenha" class="form-hint" style="color: var(--danger); display: none;">Senha incorreta. Tente novamente.</p>
         </div>
-        <button type="submit" class="btn btn-primary btn-block btn-lg">Entrar</button>
+        <button type="submit" id="btnEntrar" class="btn btn-primary btn-block btn-lg">Entrar</button>
       </form>
     </div>
   </div>
@@ -32,15 +32,32 @@
       window.location.href = 'index.html';
     }
 
-    document.getElementById('formLogin').addEventListener('submit', function(e) {
+    document.getElementById('formLogin').addEventListener('submit', async function(e) {
       e.preventDefault();
-      const senha = document.getElementById('senha').value;
-      if (senha === SENHA_DASHBOARD) {
+
+      const senha = document.getElementById('senha').value.trim();
+      const btn = document.getElementById('btnEntrar');
+      const erroEl = document.getElementById('erroSenha');
+
+      btn.disabled = true;
+      btn.innerHTML = 'Verificando...';
+      erroEl.style.display = 'none';
+
+      const { data } = await db
+        .from('usuarios')
+        .select('nome')
+        .eq('senha', senha)
+        .maybeSingle();
+
+      if (data) {
         sessionStorage.setItem('rh_autenticado', 'true');
+        sessionStorage.setItem('rh_nome', data.nome);
         window.location.href = 'index.html';
       } else {
-        document.getElementById('erroSenha').style.display = 'block';
+        erroEl.style.display = 'block';
         document.getElementById('senha').classList.add('error');
+        btn.disabled = false;
+        btn.innerHTML = 'Entrar';
       }
     });
   </script>

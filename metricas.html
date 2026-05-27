@@ -76,6 +76,7 @@
     <a href="index.html" class="header-logo"><img src="logo-seazone.png" alt="Seazone"></a>
     <div class="header-nav">
       <a href="index.html" class="btn btn-secondary btn-sm">← Voltar</a>
+      <span class="header-user" id="nomeUsuario">Seazone RH</span>
     </div>
   </header>
 
@@ -137,6 +138,7 @@
   <script src="config.js"></script>
   <script>
     verificarAcesso();
+    document.getElementById('nomeUsuario').textContent = getNomeUsuario();
 
     async function carregarMetricas() {
       document.getElementById('loading').style.display = 'block';

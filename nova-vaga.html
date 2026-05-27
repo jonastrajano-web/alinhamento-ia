@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Nova Vaga — Alinhamento IA</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+  <header class="header">
+    <a href="index.html" class="header-logo"><img src="logo-seazone.png" alt="Seazone"></a>
+    <div class="header-nav">
+      <a href="index.html" class="btn btn-secondary btn-sm">← Voltar</a>
+    </div>
+  </header>
+
+  <div class="container" style="max-width: 600px;">
+    <div class="page-header">
+      <div>
+        <h1 class="page-title">Nova vaga</h1>
+        <p class="page-subtitle">Preencha os dados para gerar o link do gestor</p>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-body">
+        <form id="formNovaVaga">
+          <div class="form-group">
+            <label class="form-label">Nome interno da vaga *</label>
+            <input type="text" id="titulo" class="form-control"
+              placeholder="Ex: Consultor Regional de Franquias — Nordeste"
+              required>
+            <p class="form-hint">Nome usado internamente para identificar a vaga no sistema.</p>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Cargo para divulgação</label>
+            <input type="text" id="cargo" class="form-control"
+              placeholder="Ex: Consultor Regional de Franquias">
+            <p class="form-hint">Como a vaga será anunciada externamente (pode ser diferente do nome interno).</p>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">E-mail do gestor</label>
+            <input type="email" id="email_gestor" class="form-control"
+              placeholder="Ex: gestor@seazone.com.br">
+            <p class="form-hint">Para registro interno de quem preencheu o formulário.</p>
+          </div>
+
+          <div class="divider"></div>
+
+          <button type="submit" id="btnCriar" class="btn btn-primary btn-block btn-lg">
+            Criar vaga e gerar link
+          </button>
+        </form>
+
+        <div id="resultado" style="display: none; margin-top: 24px;">
+          <div class="card" style="border: 2px solid var(--primary);">
+            <div class="card-body">
+              <p style="font-size: 13px; color: var(--text-secondary); margin-bottom: 8px;">
+                ✅ Vaga criada! Envie esse link para o gestor preencher:
+              </p>
+              <div style="display: flex; gap: 8px; align-items: center;">
+                <input type="text" id="linkGerado" class="form-control"
+                  readonly style="font-size: 13px; background: var(--bg);">
+                <button class="btn btn-primary" id="btnCopiar" onclick="copiarLinkGerado()">
+                  📋 Copiar
+                </button>
+              </div>
+              <div style="display: flex; gap: 8px; margin-top: 12px;">
+                <a href="index.html" class="btn btn-secondary">Ver todas as vagas</a>
+                <a id="btnAbrirVaga" href="#" class="btn btn-primary">Abrir vaga →</a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="config.js"></script>
+  <script>
+    verificarAcesso();
+
+    document.getElementById('formNovaVaga').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      const btn = document.getElementById('btnCriar');
+      btn.disabled = true;
+      btn.innerHTML = 'Criando...';
+
+      const titulo = document.getElementById('titulo').value.trim();
+      const cargo = document.getElementById('cargo').value.trim();
+      const email_gestor = document.getElementById('email_gestor').value.trim();
+
+      const { data, error } = await db
+        .from('vagas')
+        .insert({ titulo, cargo_divulgacao: cargo || null, email_gestor: email_gestor || null })
+        .select()
+        .single();
+
+      if (error) {
+        alert('Erro ao criar vaga. Tente novamente.');
+        btn.disabled = false;
+        btn.innerHTML = 'Criar vaga e gerar link';
+        return;
+      }
+
+      const baseUrl = window.location.origin + window.location.pathname.replace('nova-vaga.html', '');
+      const link = `${baseUrl}formulario.html?token=${data.token_gestor}`;
+
+      document.getElementById('linkGerado').value = link;
+      document.getElementById('btnAbrirVaga').href = `vaga.html?id=${data.id}`;
+      document.getElementById('resultado').style.display = 'block';
+      document.getElementById('formNovaVaga').style.display = 'none';
+    });
+
+    function copiarLinkGerado() {
+      const link = document.getElementById('linkGerado').value;
+      const btn = document.getElementById('btnCopiar');
+      navigator.clipboard.writeText(link).then(() => {
+        btn.innerHTML = '✓ Copiado!';
+        btn.classList.add('copiado');
+        setTimeout(() => { btn.innerHTML = '📋 Copiar'; btn.classList.remove('copiado'); }, 2000);
+      });
+    }
+  </script>
+</body>
+</html>

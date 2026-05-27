@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard — Alinhamento IA</title>
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    .filtros {
+      display: flex;
+      gap: 8px;
+      padding: 16px 16px 0;
+      flex-wrap: wrap;
+    }
+    .filtro-btn {
+      padding: 6px 14px;
+      border: 1.5px solid var(--border);
+      background: white;
+      border-radius: 20px;
+      font-size: 13px;
+      cursor: pointer;
+      color: var(--text-secondary);
+      font-weight: 500;
+      transition: all 0.15s;
+    }
+    .filtro-btn:hover { border-color: var(--primary); color: var(--primary); }
+    .filtro-btn.ativo { background: var(--primary); border-color: var(--primary); color: white; }
+  </style>
+</head>
+<body>
+
+  <header class="header">
+    <a href="index.html" class="header-logo"><img src="logo-seazone.png" alt="Seazone"></a>
+    <div class="header-nav">
+      <a href="metricas.html" class="btn btn-secondary btn-sm">📊 Métricas</a>
+      <span class="header-user">Seazone RH</span>
+      <button class="btn btn-secondary btn-sm" onclick="sair()">Sair</button>
+    </div>
+  </header>
+
+  <div class="container">
+    <div class="page-header">
+      <div>
+        <h1 class="page-title">Vagas</h1>
+        <p class="page-subtitle">Gerencie os alinhamentos de vagas com os gestores</p>
+      </div>
+      <a href="nova-vaga.html" class="btn btn-primary">+ Nova vaga</a>
+    </div>
+
+    <div class="card">
+      <div class="filtros">
+        <button class="filtro-btn ativo" onclick="filtrar('todas', this)">Todas</button>
+        <button class="filtro-btn" onclick="filtrar('aguardando_gestor', this)">⏳ Aguardando gestor</button>
+        <button class="filtro-btn" onclick="filtrar('formulario_preenchido', this)">✅ Preenchidas</button>
+        <button class="filtro-btn" onclick="filtrar('em_processo', this)">🔄 Em processo</button>
+        <button class="filtro-btn" onclick="filtrar('arquivada', this)">📦 Arquivadas</button>
+      </div>
+      <div id="conteudo">
+        <div class="loading">Carregando vagas...</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="config.js"></script>
+  <script>
+    verificarAcesso();
+
+    let todasVagas = [];
+    let filtroAtual = 'todas';
+
+    async function carregarVagas() {
+      const { data, error } = await db
+        .from('vagas')
+        .select('*, formulario_gestor(preenchido_em)')
+        .order('criado_em', { ascending: false });
+
+      if (error) {
+        document.getElementById('conteudo').innerHTML =
+          '<div class="loading" style="color:var(--danger)">Erro ao carregar vagas.</div>';
+        return;
+      }
+
+      todasVagas = data || [];
+      renderizarVagas();
+    }
+
+    function filtrar(status, btn) {
+      filtroAtual = status;
+      document.querySelectorAll('.filtro-btn').forEach(b => b.classList.remove('ativo'));
+      btn.classList.add('ativo');
+      renderizarVagas();
+    }
+
+    function renderizarVagas() {
+      const el = document.getElementById('conteudo');
+      const vagas = filtroAtual === 'todas'
+        ? todasVagas.filter(v => v.status !== 'arquivada')
+        : todasVagas.filter(v => v.status === filtroAtual);
+
+      if (vagas.length === 0) {
+        el.innerHTML = `
+          <div class="empty-state">
+            <div class="empty-state-icon">📋</div>
+            <h3>Nenhuma vaga encontrada</h3>
+            <p>${filtroAtual === 'todas' ? 'Clique em "Nova vaga" para começar o alinhamento' : 'Sem vagas com esse status'}</p>
+          </div>`;
+        return;
+      }
+
+      const baseUrl = window.location.origin + window.location.pathname.replace('index.html', '');
+
+      el.innerHTML = `
+        <table class="vagas-table">
+          <thead>
+            <tr>
+              <th>Vaga</th>
+              <th>Status</th>
+              <th>Criada em</th>
+              <th>Preenchida em</th>
+              <th>Link do gestor</th>
+              <th>Ações</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${vagas.map(v => {
+              const preenchidaEm = v.formulario_gestor?.preenchido_em
+                ? formatarData(v.formulario_gestor.preenchido_em)
+                : '<span style="color:var(--text-secondary);font-size:12px">—</span>';
+              return `
+              <tr>
+                <td>
+                  <div class="vaga-titulo">${v.titulo}</div>
+                  ${v.cargo_divulgacao ? `<div class="vaga-cargo">${v.cargo_divulgacao}</div>` : ''}
+                  ${v.email_gestor ? `<div class="vaga-cargo">✉️ ${v.email_gestor}</div>` : ''}
+                </td>
+                <td><span class="badge ${STATUS_COR[v.status]}">${STATUS_LABEL[v.status]}</span></td>
+                <td style="color: var(--text-secondary); font-size: 13px;">${formatarData(v.criado_em)}</td>
+                <td style="color: var(--text-secondary); font-size: 13px;">${preenchidaEm}</td>
+                <td>
+                  <button class="btn btn-secondary btn-sm"
+                    onclick="copiarLink('${baseUrl}formulario.html?token=${v.token_gestor}', this)">
+                    📋 Copiar link
+                  </button>
+                </td>
+                <td style="display:flex;gap:6px;align-items:center;">
+                  <a href="vaga.html?id=${v.id}" class="btn btn-primary btn-sm">Abrir</a>
+                  ${v.status !== 'arquivada'
+                    ? `<button class="btn btn-secondary btn-sm" onclick="arquivarVaga('${v.id}', this)" title="Arquivar vaga">📦</button>`
+                    : `<button class="btn btn-secondary btn-sm" onclick="desarquivarVaga('${v.id}', this)" title="Reativar vaga">↩️</button>`
+                  }
+                </td>
+              </tr>`
+            }).join('')}
+          </tbody>
+        </table>`;
+    }
+
+    function copiarLink(link, btn) {
+      navigator.clipboard.writeText(link).then(() => {
+        const orig = btn.innerHTML;
+        btn.innerHTML = '✓ Copiado!';
+        btn.classList.add('copiado');
+        setTimeout(() => { btn.innerHTML = orig; btn.classList.remove('copiado'); }, 2000);
+      });
+    }
+
+    async function arquivarVaga(id, btn) {
+      if (!confirm('Arquivar esta vaga? Ela ficará oculta da lista principal.')) return;
+      const { error } = await db.from('vagas').update({ status: 'arquivada' }).eq('id', id);
+      if (!error) {
+        const vaga = todasVagas.find(v => v.id === id);
+        if (vaga) vaga.status = 'arquivada';
+        renderizarVagas();
+        mostrarToast('Vaga arquivada.');
+      }
+    }
+
+    async function desarquivarVaga(id, btn) {
+      const { error } = await db.from('vagas').update({ status: 'aguardando_gestor' }).eq('id', id);
+      if (!error) {
+        const vaga = todasVagas.find(v => v.id === id);
+        if (vaga) vaga.status = 'aguardando_gestor';
+        renderizarVagas();
+        mostrarToast('Vaga reativada.');
+      }
+    }
+
+    function mostrarToast(msg) {
+      const t = document.getElementById('toast');
+      t.textContent = msg;
+      t.className = 'toast sucesso show';
+      setTimeout(() => t.classList.remove('show'), 3000);
+    }
+
+    function sair() {
+      sessionStorage.removeItem('rh_autenticado');
+      window.location.href = 'login.html';
+    }
+
+    carregarVagas();
+  </script>
+</body>
+</html>

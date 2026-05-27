@@ -1,0 +1,749 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Vaga — Alinhamento IA</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+  <header class="header">
+    <a href="index.html" class="header-logo"><img src="logo-seazone.png" alt="Seazone"></a>
+    <div class="header-nav">
+      <a href="index.html" class="btn btn-secondary btn-sm">← Voltar</a>
+    </div>
+  </header>
+
+  <div id="loading" class="container"><div class="loading">Carregando...</div></div>
+
+  <div id="conteudo" style="display: none;">
+    <div class="container">
+
+      <!-- Cabeçalho da vaga -->
+      <div class="page-header">
+        <div>
+          <h1 class="page-title" id="tituloPagina"></h1>
+          <div id="statusBadge" style="margin-top: 6px;"></div>
+        </div>
+        <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+          <select id="seletorStatus" class="form-control" style="width: auto; font-size: 13px;"
+            onchange="alterarStatus(this.value)">
+            <option value="aguardando_gestor">⏳ Aguardando gestor</option>
+            <option value="formulario_preenchido">✅ Formulário preenchido</option>
+            <option value="em_processo">🔄 Em processo</option>
+            <option value="encerrada">🏁 Encerrada</option>
+            <option value="arquivada">📦 Arquivada</option>
+          </select>
+          <button class="btn btn-secondary btn-sm" id="btnCopiarLink" onclick="copiarLinkGestor()">
+            📋 Copiar link
+          </button>
+          <button class="btn btn-sm" style="background: var(--danger-light); color: var(--danger); border: 1px solid var(--danger);"
+            onclick="excluirVaga()">
+            🗑️ Excluir
+          </button>
+        </div>
+      </div>
+
+      <!-- TABS -->
+      <div style="display: flex; gap: 4px; margin-bottom: 24px; border-bottom: 2px solid var(--border);">
+        <button class="tab-btn active" onclick="trocarTab('gestor', this)">📋 Formulário do gestor</button>
+        <button class="tab-btn" onclick="trocarTab('recrutador', this)">✏️ Meu complemento</button>
+        <button class="tab-btn" onclick="trocarTab('prompts', this)">🤖 Prompts de IA</button>
+      </div>
+
+      <!-- TAB: FORMULÁRIO DO GESTOR -->
+      <div id="tab-gestor">
+        <div id="semFormulario" class="card" style="display: none;">
+          <div class="card-body">
+            <div class="empty-state">
+              <div class="empty-state-icon">⏳</div>
+              <h3>Aguardando o gestor</h3>
+              <p>O gestor ainda não preencheu o formulário. Envie o link para ele.</p>
+              <div style="margin-top: 16px;">
+                <button class="btn btn-primary" onclick="copiarLinkGestor()">📋 Copiar link do gestor</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div id="comFormulario" style="display: none;">
+          <div style="display: grid; gap: 16px;">
+
+            <div class="card">
+              <div class="card-header"><span class="card-title">A — Contexto do time e abertura</span></div>
+              <div class="card-body">
+                <div class="detalhe-grid">
+                  <div>
+                    <div class="campo-leitura"><label>Como está o time hoje</label><p id="f_a1"></p></div>
+                    <div class="campo-leitura"><label>Objetivos do time (6 meses)</label><p id="f_a2"></p></div>
+                    <div class="campo-leitura"><label>Maior desafio atual</label><p id="f_a3"></p></div>
+                  </div>
+                  <div>
+                    <div class="campo-leitura"><label>Motivo da abertura</label><p id="f_a4"></p></div>
+                    <div class="campo-leitura" id="wrap_a5"><label>Substituição</label><p id="f_a5"></p></div>
+                    <div class="campo-leitura"><label>Confidencial</label><p id="f_a6"></p></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="card">
+              <div class="card-header"><span class="card-title">B — A vaga</span></div>
+              <div class="card-body">
+                <div class="campo-leitura"><label>Problema que resolve</label><p id="f_b1"></p></div>
+                <div class="campo-leitura"><label>Funções e responsabilidades</label><p id="f_b2"></p></div>
+                <div class="detalhe-grid">
+                  <div class="campo-leitura"><label>Senioridade</label><p id="f_b3"></p></div>
+                  <div class="campo-leitura">
+                    <label>Soft skills priorizadas</label>
+                    <div class="skills-tags" id="f_b4"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="card">
+              <div class="card-header"><span class="card-title">C — Candidato ideal</span></div>
+              <div class="card-body">
+                <div class="campo-leitura"><label>Conhecimentos e habilidades</label><p id="f_c1"></p></div>
+                <div class="detalhe-grid">
+                  <div class="campo-leitura"><label>Formações válidas</label><p id="f_c2"></p></div>
+                  <div class="campo-leitura"><label>Experiência mínima</label><p id="f_c3"></p></div>
+                </div>
+                <div class="campo-leitura"><label>Requisitos eliminatórios</label><p id="f_c4"></p></div>
+              </div>
+            </div>
+
+            <div class="card">
+              <div class="card-header"><span class="card-title">D — Estrutura do processo</span></div>
+              <div class="card-body">
+                <div class="detalhe-grid">
+                  <div class="campo-leitura"><label>Responsável entrevista técnica/final</label><p id="f_d1"></p></div>
+                  <div class="campo-leitura"><label>Responsável correção do desafio</label><p id="f_d2a"></p></div>
+                  <div class="campo-leitura"><label>Prazo do desafio (dias)</label><p id="f_d2b"></p></div>
+                  <div class="campo-leitura"><label>Link do desafio</label><p id="f_d2c"></p></div>
+                  <div class="campo-leitura"><label>Formato da avaliação</label><p id="f_d3"></p></div>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB: COMPLEMENTO DO RECRUTADOR -->
+      <div id="tab-recrutador" style="display: none;">
+        <form id="formComplemento">
+          <div class="card">
+            <div class="card-header"><span class="card-title">Critérios do alinhamento</span></div>
+            <div class="card-body">
+
+              <div class="form-group">
+                <label class="form-label">Critérios inegociáveis</label>
+                <textarea id="r_inegociaveis" class="form-control" rows="3"
+                  placeholder="O que o gestor definiu como eliminatório — sem isso o candidato não avança"></textarea>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">Como IA First se aplica nessa vaga</label>
+                <textarea id="r_ia_first" class="form-control" rows="2"
+                  placeholder="Ex: uso de IA para análise de dados, automação de relatórios, geração de conteúdo"></textarea>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">Red flags — perfis que não funcionam nesse time</label>
+                <textarea id="r_red_flags" class="form-control" rows="3"
+                  placeholder="Perfis que o gestor disse explicitamente que não funcionam — anotar com atenção"></textarea>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">Prioridade da vaga</label>
+                <div class="radio-group">
+                  <label class="radio-option" onclick="selecionarPrioridade(this, 'alta')">
+                    <input type="radio" name="prioridade" value="alta">
+                    <div>
+                      <div class="radio-label" style="color: var(--danger);">🔴 Alta — validar com Gustavo Kremer</div>
+                    </div>
+                  </label>
+                  <label class="radio-option" onclick="selecionarPrioridade(this, 'media')">
+                    <input type="radio" name="prioridade" value="media">
+                    <div><div class="radio-label" style="color: var(--warning);">🟡 Média</div></div>
+                  </label>
+                  <label class="radio-option" onclick="selecionarPrioridade(this, 'normal')">
+                    <input type="radio" name="prioridade" value="normal">
+                    <div><div class="radio-label" style="color: var(--primary);">🟢 Normal</div></div>
+                  </label>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">Estrutura do processo validada</label>
+                <textarea id="r_estrutura" class="form-control" rows="4"
+                  placeholder="Ex:&#10;Triagem 1 — [Recrutador 1]&#10;Fit Cultural — RH&#10;Técnica — [Nome do responsável técnico]&#10;Final — [Nome do gestor final]"></textarea>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">Notas do recrutador</label>
+                <textarea id="r_notas" class="form-control" rows="4"
+                  placeholder="Complementos, correções ou observações sobre o que o gestor preencheu"></textarea>
+              </div>
+
+              <button type="submit" id="btnSalvar" class="btn btn-primary btn-lg">
+                💾 Salvar complemento
+              </button>
+
+            </div>
+          </div>
+        </form>
+      </div>
+
+      <!-- TAB: PROMPTS -->
+      <div id="tab-prompts" style="display: none;">
+        <div style="display: grid; gap: 16px;">
+
+          <div class="card">
+            <div class="card-header">
+              <span class="card-title">📋 Dados compilados da vaga</span>
+              <button class="btn btn-primary btn-sm" onclick="gerarDadosCompilados()">Compilar dados</button>
+            </div>
+            <div class="card-body">
+              <p style="font-size: 13px; color: var(--text-secondary);">
+                Todas as informações do formulário do gestor e do seu complemento em um texto limpo. Cole no Claude e peça o que precisar.
+              </p>
+              <div id="dadosCompilados" style="display: none;">
+                <div class="prompt-box" id="textoDadosCompilados" style="white-space: pre-wrap; font-size: 13px; line-height: 1.6;"></div>
+                <div class="prompt-actions">
+                  <button class="btn btn-primary btn-sm" onclick="copiarPrompt('textoDadosCompilados', this)">📋 Copiar tudo</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <span class="card-title">🤖 Prompt — Texto de publicação</span>
+              <button class="btn btn-primary btn-sm" onclick="gerarPromptPublicacao()">Gerar prompt</button>
+            </div>
+            <div class="card-body">
+              <p style="font-size: 13px; color: var(--text-secondary);">
+                Cole no Claude para gerar o texto pronto para publicar na InHire.
+              </p>
+              <div id="promptPublicacao" style="display: none;">
+                <div class="prompt-box" id="textoPromptPublicacao"></div>
+                <div class="prompt-actions">
+                  <button class="btn btn-primary btn-sm" onclick="copiarPrompt('textoPromptPublicacao', this)">📋 Copiar prompt</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <span class="card-title">🤖 Prompt — Briefing interno</span>
+              <button class="btn btn-primary btn-sm" onclick="gerarPromptBriefing()">Gerar prompt</button>
+            </div>
+            <div class="card-body">
+              <p style="font-size: 13px; color: var(--text-secondary);">
+                Cole no Claude para gerar o briefing completo para triagem e entrevistas.
+              </p>
+              <div id="promptBriefing" style="display: none;">
+                <div class="prompt-box" id="textoPromptBriefing"></div>
+                <div class="prompt-actions">
+                  <button class="btn btn-primary btn-sm" onclick="copiarPrompt('textoPromptBriefing', this)">📋 Copiar prompt</button>
+                </div>
+              </div>
+
+              <div style="margin-top: 20px; border-top: 1px solid var(--border); padding-top: 16px;">
+                <label class="form-label" style="margin-bottom: 8px;">
+                  📝 Resultado gerado pelo Claude
+                </label>
+                <p style="font-size: 12px; color: var(--text-secondary); margin-bottom: 8px;">
+                  Cole aqui o texto que o Claude gerou para guardar junto com a vaga.
+                </p>
+                <textarea id="briefingGerado" class="form-control" rows="10"
+                  placeholder="Cole aqui o briefing gerado pelo Claude..."></textarea>
+                <div style="margin-top: 8px;">
+                  <button class="btn btn-primary btn-sm" onclick="salvarBriefingGerado()">💾 Salvar briefing</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <style>
+    .tab-btn {
+      padding: 10px 18px;
+      border: none;
+      background: none;
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--text-secondary);
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      margin-bottom: -2px;
+      transition: all 0.15s;
+    }
+    .tab-btn:hover { color: var(--text); }
+    .tab-btn.active { color: var(--primary); border-bottom-color: var(--primary); }
+  </style>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="config.js"></script>
+  <script>
+    verificarAcesso();
+
+    let vagaData = null;
+    let formData = null;
+    let compData = null;
+    let tokenGestor = null;
+
+    function trocarTab(tab, btn) {
+      ['gestor','recrutador','prompts'].forEach(t => {
+        document.getElementById(`tab-${t}`).style.display = 'none';
+      });
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      document.getElementById(`tab-${tab}`).style.display = 'block';
+      btn.classList.add('active');
+    }
+
+    function selecionarPrioridade(label, valor) {
+      document.querySelectorAll('input[name="prioridade"]').forEach(r => {
+        r.closest('.radio-option').classList.remove('selected');
+      });
+      label.classList.add('selected');
+    }
+
+    function val(v) {
+      return v || '<span class="vazio">Não informado</span>';
+    }
+
+    function mostrarFormulario(f) {
+      const motivos = { substituicao: 'Substituição', aumento_quadro: 'Aumento de quadro', nova_area: 'Nova área ou função' };
+      const senioridade = { estagio: 'Estágio', junior: 'Júnior', pleno: 'Pleno', senior: 'Sênior' };
+      const formatos = { 'assíncrono': '📋 Desafio assíncrono', live_case: '🎥 Live Case' };
+
+      document.getElementById('f_a1').innerHTML = val(f.a1_estrutura_time);
+      document.getElementById('f_a2').innerHTML = val(f.a2_objetivos_time);
+      document.getElementById('f_a3').innerHTML = val(f.a3_desafio_time);
+      document.getElementById('f_a4').innerHTML = val(motivos[f.a4_motivo_abertura]);
+      document.getElementById('f_a5').innerHTML = val(f.a5_substituicao);
+      document.getElementById('wrap_a5').style.display = f.a4_motivo_abertura === 'substituicao' ? 'block' : 'none';
+      document.getElementById('f_a6').innerHTML = f.a6_confidencial ? 'Sim — divulgação restrita' : 'Não';
+      document.getElementById('f_b1').innerHTML = val(f.b1_problema);
+      document.getElementById('f_b2').innerHTML = val(f.b2_funcoes);
+      document.getElementById('f_b3').innerHTML = val(senioridade[f.b3_senioridade]);
+
+      const skillsEl = document.getElementById('f_b4');
+      if (f.b4_skills && f.b4_skills.length) {
+        skillsEl.innerHTML = f.b4_skills.map(s => `<span class="skill-tag">${s}</span>`).join('');
+      } else {
+        skillsEl.innerHTML = '<span class="vazio">Não informado</span>';
+      }
+
+      document.getElementById('f_c1').innerHTML = val(f.c1_habilidades);
+      document.getElementById('f_c2').innerHTML = val(f.c2_formacoes);
+      document.getElementById('f_c3').innerHTML = val(f.c3_experiencia);
+      document.getElementById('f_c4').innerHTML = val(f.c4_eliminatorios);
+      document.getElementById('f_d1').innerHTML = val(f.d1_responsavel_entrevista);
+      document.getElementById('f_d2a').innerHTML = val(f.d2a_responsavel_desafio);
+      document.getElementById('f_d2b').innerHTML = f.d2b_prazo_desafio ? `${f.d2b_prazo_desafio} dias` : '<span class="vazio">Não informado</span>';
+      document.getElementById('f_d2c').innerHTML = f.d2c_link_desafio ? `<a href="${f.d2c_link_desafio}" target="_blank">${f.d2c_link_desafio}</a>` : '<span class="vazio">Não informado</span>';
+      document.getElementById('f_d3').innerHTML = val(formatos[f.d3_formato]);
+    }
+
+    function preencherComplemento(c) {
+      if (!c) return;
+      document.getElementById('r_inegociaveis').value = c.inegociaveis || '';
+      document.getElementById('r_ia_first').value = c.ia_first_aplicacao || '';
+      document.getElementById('r_red_flags').value = c.red_flags || '';
+      document.getElementById('r_estrutura').value = c.estrutura_processo || '';
+      document.getElementById('r_notas').value = c.notas_recrutador || '';
+      if (c.prioridade) {
+        const radio = document.querySelector(`input[name="prioridade"][value="${c.prioridade}"]`);
+        if (radio) {
+          radio.checked = true;
+          radio.closest('.radio-option').classList.add('selected');
+        }
+      }
+    }
+
+    function mostrarToast(msg, tipo = 'sucesso') {
+      const t = document.getElementById('toast');
+      t.textContent = msg;
+      t.className = `toast ${tipo} show`;
+      setTimeout(() => t.classList.remove('show'), 3000);
+    }
+
+    async function salvarComplemento(e) {
+      e.preventDefault();
+      const prioridade = document.querySelector('input[name="prioridade"]:checked');
+      const btn = document.getElementById('btnSalvar');
+      btn.disabled = true;
+      btn.innerHTML = 'Salvando...';
+
+      const payload = {
+        vaga_id: vagaData.id,
+        inegociaveis: document.getElementById('r_inegociaveis').value,
+        ia_first_aplicacao: document.getElementById('r_ia_first').value,
+        red_flags: document.getElementById('r_red_flags').value,
+        prioridade: prioridade ? prioridade.value : 'normal',
+        estrutura_processo: document.getElementById('r_estrutura').value,
+        notas_recrutador: document.getElementById('r_notas').value
+      };
+
+      let error;
+      if (compData) {
+        ({ error } = await db.from('complemento_recrutador').update(payload).eq('vaga_id', vagaData.id));
+      } else {
+        ({ error } = await db.from('complemento_recrutador').insert(payload));
+        if (!error) compData = payload;
+      }
+
+      btn.disabled = false;
+      btn.innerHTML = '💾 Salvar complemento';
+
+      if (error) {
+        mostrarToast('Erro ao salvar. Tente novamente.', 'erro');
+      } else {
+        mostrarToast('Complemento salvo com sucesso!');
+        if (vagaData.status === 'formulario_preenchido') {
+          await db.from('vagas').update({ status: 'em_processo' }).eq('id', vagaData.id);
+        }
+      }
+    }
+
+    function gerarPromptPublicacao() {
+      if (!formData) {
+        mostrarToast('O gestor ainda não preencheu o formulário.', 'erro');
+        return;
+      }
+
+      const f = formData;
+      const v = vagaData;
+      const senioridade = { estagio: 'Estágio', junior: 'Júnior', pleno: 'Pleno', senior: 'Sênior' };
+      const formatos = { 'assíncrono': 'Desafio assíncrono', live_case: 'Live Case' };
+
+      const prompt = `Você é um especialista em recrutamento da Seazone.
+
+CONTEXTO IMPORTANTE — ESTRUTURA DA VAGA NA INHIRE:
+O que é FIXO na InHire (NÃO gerar): "Como é fazer parte da equipe Seazone?", incentivos, parcerias, sobre a empresa e cultura.
+
+O que é ALTERADO por vaga (gere apenas isso):
+1. Título da vaga e modalidade/localização
+2. O que nosso time de [nome do time] faz?
+3. O que você vai fazer
+4. O que esperamos de você
+5. Você se destaca, se tiver
+6. Sobre a contratação (apenas se diferente do padrão: PJ + Remoto)
+
+---
+
+INFORMAÇÕES DA VAGA:
+Título: ${v.titulo}
+Cargo divulgação: ${v.cargo_divulgacao || v.titulo}
+Senioridade: ${senioridade[f.b3_senioridade] || f.b3_senioridade}
+Formato avaliação: ${formatos[f.d3_formato] || f.d3_formato}
+
+PROBLEMA QUE RESOLVE:
+${f.b1_problema}
+
+FUNÇÕES E RESPONSABILIDADES:
+${f.b2_funcoes}
+
+CONHECIMENTOS E HABILIDADES:
+${f.c1_habilidades}
+
+FORMAÇÕES VÁLIDAS:
+${f.c2_formacoes}
+
+EXPERIÊNCIA MÍNIMA:
+${f.c3_experiencia}
+
+${f.c4_eliminatorios ? `REQUISITOS ELIMINATÓRIOS:\n${f.c4_eliminatorios}\n` : ''}
+CONTEXTO DO TIME:
+${f.a1_estrutura_time}
+
+OBJETIVOS DO TIME:
+${f.a2_objetivos_time}
+
+${compData && compData.notas_recrutador ? `NOTAS DO RECRUTADOR:\n${compData.notas_recrutador}\n` : ''}
+---
+
+REGRAS:
+- Gere SOMENTE as seções que mudam — nunca repita o que é fixo na InHire
+- Não invente informações — use apenas o que foi fornecido
+- Tom direto, humano, sem corporativês
+- IA First SEMPRE presente nos diferenciais: "Familiaridade com uso de IA para [aplicação específica]"
+- Siga o padrão de emojis da Seazone (💼 🔍 🤩)
+- O texto será inserido manualmente na InHire pelo recrutador`;
+
+      document.getElementById('textoPromptPublicacao').textContent = prompt;
+      document.getElementById('promptPublicacao').style.display = 'block';
+    }
+
+    function gerarPromptBriefing() {
+      if (!formData) {
+        mostrarToast('O gestor ainda não preencheu o formulário.', 'erro');
+        return;
+      }
+
+      const f = formData;
+      const v = vagaData;
+      const c = compData;
+      const senioridade = { estagio: 'Estágio', junior: 'Júnior', pleno: 'Pleno', senior: 'Sênior' };
+
+      const prompt = `Você é um especialista em recrutamento da Seazone.
+Com base nas informações abaixo, gere um briefing interno completo para o recrutador usar durante o processo seletivo.
+
+---
+
+INFORMAÇÕES DA VAGA:
+Cargo: ${v.titulo}
+Senioridade: ${senioridade[f.b3_senioridade] || f.b3_senioridade}
+
+Problema que resolve: ${f.b1_problema}
+Funções: ${f.b2_funcoes}
+Conhecimentos e habilidades: ${f.c1_habilidades}
+Formações válidas: ${f.c2_formacoes}
+Experiência mínima: ${f.c3_experiencia}
+${f.c4_eliminatorios ? `Requisitos eliminatórios: ${f.c4_eliminatorios}` : ''}
+
+Contexto do time: ${f.a1_estrutura_time}
+Objetivos do time: ${f.a2_objetivos_time}
+Desafio atual do time: ${f.a3_desafio_time}
+Motivo da abertura: ${f.a4_motivo_abertura}
+${f.a5_substituicao ? `Substituição: ${f.a5_substituicao}` : ''}
+
+${c ? `CRITÉRIOS DO ALINHAMENTO (recrutador):
+Inegociáveis: ${c.inegociaveis || 'Não preenchido'}
+IA First aplicado: ${c.ia_first_aplicacao || 'Não preenchido'}
+Red flags: ${c.red_flags || 'Não preenchido'}
+Notas: ${c.notas_recrutador || 'Não preenchido'}` : ''}
+
+---
+
+VALORES CULTURAIS FIXOS DA SEAZONE:
+Soft Skills Fundamentais (obrigatórias): Comunicação | Coragem e Iniciativa | Colaboração
+Valores: Sangue nos Olhos | Foco em Fatos e Dados | Priorizar e Simplificar | Proatividade
+IA First: candidato ideal usa IA como ferramenta de trabalho no dia a dia — inegociável.
+
+Soft Skills específicas priorizadas para essa vaga:
+${f.b4_skills ? f.b4_skills.join(' | ') : 'Não informado'}
+
+---
+
+GERE AS SEGUINTES SEÇÕES:
+
+1. CONTEXTO DA VAGA
+Resumo objetivo: o que é a vaga, por que abriu e qual problema resolve.
+
+2. PERSONA DO CANDIDATO IDEAL
+Descrever em 4 dimensões:
+- Quem é: background, trajetória típica, de onde vem
+- Como pensa: mindset, postura diante de problemas
+- Como trabalha: dinâmica, autonomia, ritmo
+- Como se conecta com a Seazone: onde os valores aparecem naturalmente nessa pessoa
+
+3. O QUE OLHAR NO CURRÍCULO
+5 camadas: Eliminatórios | Formação | Experiências que validam | Sinais positivos | Sinais de alerta
+
+4. PALAVRAS-CHAVE PARA TRIAGEM NO INHIRE
+Cargos, empresas, setores, ferramentas e formações relevantes. Contexto importa.
+
+5. RED FLAGS — PERFIS QUE NÃO FUNCIONAM
+O que elimina imediatamente.
+
+6. ORIENTAÇÕES PARA O FIT CULTURAL
+- Aprofundar nas soft skills priorizadas: ${f.b4_skills ? f.b4_skills.join(', ') : 'conforme formulário'}
+- Validação IA First obrigatória: como usa, quais ferramentas, como aplica
+- Pontos de atenção baseados nos red flags
+
+REGRAS: Tom interno e direto. Não inventar. Persona descritiva. Checklist de currículo prático.`;
+
+      document.getElementById('textoPromptBriefing').textContent = prompt;
+      document.getElementById('promptBriefing').style.display = 'block';
+    }
+
+    function copiarPrompt(id, btn) {
+      const texto = document.getElementById(id).textContent;
+      navigator.clipboard.writeText(texto).then(() => {
+        const orig = btn.innerHTML;
+        btn.innerHTML = '✓ Copiado!';
+        btn.classList.add('copiado');
+        setTimeout(() => { btn.innerHTML = orig; btn.classList.remove('copiado'); }, 2000);
+      });
+    }
+
+    function copiarLinkGestor() {
+      if (!tokenGestor) return;
+      const baseUrl = window.location.origin + window.location.pathname.replace('vaga.html', '');
+      const link = `${baseUrl}formulario.html?token=${tokenGestor}`;
+      const btn = document.getElementById('btnCopiarLink');
+      navigator.clipboard.writeText(link).then(() => {
+        const orig = btn.innerHTML;
+        btn.innerHTML = '✓ Copiado!';
+        btn.classList.add('copiado');
+        setTimeout(() => { btn.innerHTML = orig; btn.classList.remove('copiado'); }, 2000);
+      });
+    }
+
+    async function init() {
+      const params = new URLSearchParams(window.location.search);
+      const id = params.get('id');
+      if (!id) { window.location.href = 'index.html'; return; }
+
+      const { data: vaga } = await db.from('vagas').select('*').eq('id', id).single();
+      if (!vaga) { window.location.href = 'index.html'; return; }
+
+      vagaData = vaga;
+      tokenGestor = vaga.token_gestor;
+
+      document.getElementById('tituloPagina').textContent = vaga.titulo;
+      document.getElementById('statusBadge').innerHTML = `<span class="badge ${STATUS_COR[vaga.status]}">${STATUS_LABEL[vaga.status]}</span>`;
+      document.getElementById('seletorStatus').value = vaga.status;
+
+      const { data: form } = await db.from('formulario_gestor').select('*').eq('vaga_id', id).single();
+      formData = form;
+
+      const { data: comp } = await db.from('complemento_recrutador').select('*').eq('vaga_id', id).single();
+      compData = comp;
+
+      document.getElementById('loading').style.display = 'none';
+      document.getElementById('conteudo').style.display = 'block';
+
+      if (form) {
+        document.getElementById('comFormulario').style.display = 'block';
+        mostrarFormulario(form);
+      } else {
+        document.getElementById('semFormulario').style.display = 'block';
+      }
+
+      preencherComplemento(comp);
+      if (comp && comp.briefing_gerado) {
+        document.getElementById('briefingGerado').value = comp.briefing_gerado;
+      }
+    }
+
+    function gerarDadosCompilados() {
+      if (!formData && !compData) {
+        mostrarToast('Nenhum dado preenchido ainda.', 'erro');
+        return;
+      }
+
+      const f = formData || {};
+      const c = compData || {};
+      const v = vagaData;
+
+      const motivos = { substituicao: 'Substituição', aumento_quadro: 'Aumento de quadro', nova_area: 'Nova área ou função' };
+      const senioridade = { estagio: 'Estágio', junior: 'Júnior', pleno: 'Pleno', senior: 'Sênior' };
+      const formatos = { 'assíncrono': 'Desafio assíncrono', live_case: 'Live Case' };
+      const prioridades = { alta: '🔴 Alta', media: '🟡 Média', normal: '🟢 Normal' };
+
+      const n = (val) => val || 'Não informado';
+
+      const texto = `============================
+DADOS DA VAGA — ${v.titulo}
+============================
+Cargo para divulgação: ${n(v.cargo_divulgacao)}
+Status: ${STATUS_LABEL[v.status]}
+${v.email_gestor ? `Gestor responsável: ${v.email_gestor}` : ''}
+
+--- A. CONTEXTO DO TIME ---
+Como está o time hoje: ${n(f.a1_estrutura_time)}
+Objetivos do time (6 meses): ${n(f.a2_objetivos_time)}
+Maior desafio atual: ${n(f.a3_desafio_time)}
+Motivo da abertura: ${n(motivos[f.a4_motivo_abertura])}
+${f.a4_motivo_abertura === 'substituicao' ? `Substituição de: ${n(f.a5_substituicao)}\n` : ''}Divulgação confidencial: ${f.a6_confidencial ? 'Sim' : 'Não'}
+
+--- B. A VAGA ---
+Problema que resolve: ${n(f.b1_problema)}
+Funções e responsabilidades: ${n(f.b2_funcoes)}
+Senioridade: ${n(senioridade[f.b3_senioridade])}
+Skills culturais e comportamentais: ${f.b4_skills && f.b4_skills.length ? f.b4_skills.join(', ') : 'Não informado'}
+
+--- C. PERFIL IDEAL ---
+Conhecimentos e habilidades: ${n(f.c1_habilidades)}
+Formações válidas: ${n(f.c2_formacoes)}
+Experiência mínima: ${n(f.c3_experiencia)}
+Requisitos eliminatórios: ${n(f.c4_eliminatorios)}
+
+--- D. PROCESSO SELETIVO ---
+Responsável pelas entrevistas: ${n(f.d1_responsavel_entrevista)}
+Responsável pelo desafio técnico: ${n(f.d2a_responsavel_desafio)}
+Prazo do desafio: ${f.d2b_prazo_desafio ? f.d2b_prazo_desafio + ' dias' : 'Não informado'}
+Link do desafio: ${n(f.d2c_link_desafio)}
+Formato do desafio: ${n(formatos[f.d3_formato])}
+
+--- COMPLEMENTO DO RECRUTADOR ---
+Inegociáveis: ${n(c.inegociaveis)}
+Aplicação IA First: ${n(c.ia_first_aplicacao)}
+Red flags: ${n(c.red_flags)}
+Prioridade da vaga: ${c.prioridade ? prioridades[c.prioridade] : 'Normal'}
+Estrutura do processo: ${n(c.estrutura_processo)}
+Notas do recrutador: ${n(c.notas_recrutador)}
+============================`;
+
+      document.getElementById('textoDadosCompilados').textContent = texto;
+      document.getElementById('dadosCompilados').style.display = 'block';
+    }
+
+    async function salvarBriefingGerado() {
+      const texto = document.getElementById('briefingGerado').value;
+      const btn = event.target;
+      btn.disabled = true;
+      btn.innerHTML = 'Salvando...';
+
+      let error;
+      if (compData) {
+        ({ error } = await db.from('complemento_recrutador')
+          .update({ briefing_gerado: texto })
+          .eq('vaga_id', vagaData.id));
+      } else {
+        ({ error } = await db.from('complemento_recrutador')
+          .insert({ vaga_id: vagaData.id, briefing_gerado: texto }));
+        if (!error) compData = { briefing_gerado: texto };
+      }
+
+      btn.disabled = false;
+      btn.innerHTML = '💾 Salvar briefing';
+      mostrarToast(error ? 'Erro ao salvar.' : 'Briefing salvo!', error ? 'erro' : 'sucesso');
+    }
+
+    async function alterarStatus(novoStatus) {
+      const { error } = await db.from('vagas').update({ status: novoStatus }).eq('id', vagaData.id);
+      if (!error) {
+        vagaData.status = novoStatus;
+        document.getElementById('statusBadge').innerHTML = `<span class="badge ${STATUS_COR[novoStatus]}">${STATUS_LABEL[novoStatus]}</span>`;
+        mostrarToast('Status atualizado!');
+        if (novoStatus === 'arquivada') {
+          setTimeout(() => { window.location.href = 'index.html'; }, 1500);
+        }
+      } else {
+        mostrarToast('Erro ao atualizar status.', 'erro');
+      }
+    }
+
+    async function excluirVaga() {
+      if (!confirm('Tem certeza que deseja excluir esta vaga? Essa ação não pode ser desfeita.')) return;
+      const { error } = await db.from('vagas').delete().eq('id', vagaData.id);
+      if (!error) {
+        mostrarToast('Vaga excluída.');
+        setTimeout(() => { window.location.href = 'index.html'; }, 1500);
+      } else {
+        mostrarToast('Erro ao excluir vaga.', 'erro');
+      }
+    }
+
+    document.getElementById('formComplemento').addEventListener('submit', salvarComplemento);
+    init();
+  </script>
+</body>
+</html>

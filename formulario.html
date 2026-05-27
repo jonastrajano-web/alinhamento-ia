@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Formulário de Alinhamento — Seazone</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+  <header class="header">
+    <div class="header-logo"><img src="logo-seazone.png" alt="Seazone"></div>
+  </header>
+
+  <div id="loading" class="container" style="max-width: 700px;">
+    <div class="loading">Carregando formulário...</div>
+  </div>
+
+  <div id="jaPreenchido" class="sucesso-wrap" style="display: none;">
+    <div class="sucesso-card">
+      <div class="sucesso-icon">✅</div>
+      <h2>Formulário já enviado</h2>
+      <p>Você já preencheu o formulário para essa vaga. O time de RH entrará em contato em breve.</p>
+    </div>
+  </div>
+
+  <div id="tokenInvalido" class="sucesso-wrap" style="display: none;">
+    <div class="sucesso-card">
+      <div class="sucesso-icon">❌</div>
+      <h2>Link inválido</h2>
+      <p>Este link não é válido ou expirou. Entre em contato com o time de RH.</p>
+    </div>
+  </div>
+
+  <div id="formulario" style="display: none;">
+    <div class="container" style="max-width: 700px;">
+
+      <div style="text-align: center; margin-bottom: 32px;">
+        <h1 style="font-size: 24px; font-weight: 800; color: var(--text);">
+          Alinhamento de Vaga
+        </h1>
+        <p id="subtituloVaga" style="font-size: 15px; color: var(--text-secondary); margin-top: 6px;"></p>
+        <p style="font-size: 13px; color: var(--text-secondary); margin-top: 8px;">
+          Preencha com atenção — suas respostas ajudarão o time de RH a encontrar o perfil ideal.
+        </p>
+      </div>
+
+      <form id="formAlinhamento">
+
+        <!-- BLOCO A -->
+        <div class="bloco">
+          <div class="bloco-header">
+            <div class="bloco-numero">A</div>
+            <div>
+              <div class="bloco-titulo">Contexto do time e abertura da vaga</div>
+              <div class="bloco-desc">Ajude-nos a entender o seu time e o motivo da abertura</div>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">A1. Como está o time hoje? *</label>
+            <textarea id="a1" class="form-control" rows="3"
+              placeholder="Descreva o tamanho, estrutura e perfis que já existem — ex: 5 pessoas, sendo 1 sênior, 3 plenos e 1 estagiário" required></textarea>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">A2. Quais são os principais objetivos do time nos próximos 6 meses? *</label>
+            <textarea id="a2" class="form-control" rows="3"
+              placeholder="Descreva as metas e prioridades do time" required></textarea>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">A3. Qual é o maior desafio do time atualmente? *</label>
+            <textarea id="a3" class="form-control" rows="2"
+              placeholder="O que mais está dificultando o trabalho do time hoje?" required></textarea>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">A4. Qual é o motivo da abertura dessa vaga? *</label>
+            <div class="radio-group" id="a4grupo">
+              <label class="radio-option" onclick="selecionarRadio(this, 'a4', 'substituicao')">
+                <input type="radio" name="a4" value="substituicao">
+                <div>
+                  <div class="radio-label">Substituição</div>
+                  <div class="radio-desc">Alguém saiu ou será desligado do time</div>
+                </div>
+              </label>
+              <label class="radio-option" onclick="selecionarRadio(this, 'a4', 'aumento_quadro')">
+                <input type="radio" name="a4" value="aumento_quadro">
+                <div>
+                  <div class="radio-label">Aumento de quadro</div>
+                  <div class="radio-desc">O time está crescendo e precisa de mais pessoas</div>
+                </div>
+              </label>
+              <label class="radio-option" onclick="selecionarRadio(this, 'a4', 'nova_area')">
+                <input type="radio" name="a4" value="nova_area">
+                <div>
+                  <div class="radio-label">Nova área ou função</div>
+                  <div class="radio-desc">É uma posição nova que não existia antes</div>
+                </div>
+              </label>
+            </div>
+          </div>
+
+          <div class="form-group" id="a5grupo" style="display: none;">
+            <label class="form-label">A5. Se for substituição, de quem seria e o que aconteceu?</label>
+            <textarea id="a5" class="form-control" rows="2"
+              placeholder="Nome/cargo da pessoa e contexto da saída"></textarea>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">A6. Essa vaga é confidencial? *</label>
+            <div class="radio-group">
+              <label class="radio-option" onclick="selecionarRadio(this, 'a6', 'nao')">
+                <input type="radio" name="a6" value="nao">
+                <div>
+                  <div class="radio-label">Não — pode ser divulgada normalmente</div>
+                </div>
+              </label>
+              <label class="radio-option" onclick="selecionarRadio(this, 'a6', 'sim')">
+                <input type="radio" name="a6" value="sim">
+                <div>
+                  <div class="radio-label">Sim — divulgação restrita</div>
+                </div>
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <!-- BLOCO B -->
+        <div class="bloco">
+          <div class="bloco-header">
+            <div class="bloco-numero">B</div>
+            <div>
+              <div class="bloco-titulo">A vaga</div>
+              <div class="bloco-desc">Descreva o que essa pessoa vai fazer e o que buscamos</div>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">B1. Qual problema essa contratação vai resolver? *</label>
+            <textarea id="b1" class="form-control" rows="2"
+              placeholder="Seja direto — ex: o time não consegue atender o volume de franquias, perdemos a pessoa que fazia X" required></textarea>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">B2. Descreva as principais funções e responsabilidades dessa posição. *</label>
+            <textarea id="b2" class="form-control" rows="5"
+              placeholder="Liste cada função de forma específica — evite termos genéricos como gestão ou suporte.&#10;Ex: Conduzir reuniões semanais com franqueados&#10;Elaborar relatórios mensais de performance por unidade" required></textarea>
+            <p class="form-hint">Seja específico — isso é fundamental para encontrar o candidato certo.</p>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">B3. Qual é a senioridade esperada para essa posição? *</label>
+            <div class="radio-group">
+              <label class="radio-option" onclick="selecionarRadio(this, 'b3', 'estagio')">
+                <input type="radio" name="b3" value="estagio">
+                <div><div class="radio-label">Estágio</div></div>
+              </label>
+              <label class="radio-option" onclick="selecionarRadio(this, 'b3', 'junior')">
+                <input type="radio" name="b3" value="junior">
+                <div><div class="radio-label">Júnior</div></div>
+              </label>
+              <label class="radio-option" onclick="selecionarRadio(this, 'b3', 'pleno')">
+                <input type="radio" name="b3" value="pleno">
+                <div><div class="radio-label">Pleno</div></div>
+              </label>
+              <label class="radio-option" onclick="selecionarRadio(this, 'b3', 'senior')">
+                <input type="radio" name="b3" value="senior">
+                <div><div class="radio-label">Sênior</div></div>
+              </label>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">B4. Selecione as 3 soft skills mais relevantes para essa vaga *</label>
+            <p class="form-hint" style="margin-bottom: 10px;">Escolha exatamente 3 — pense no que mais impacta a entrega da função.</p>
+            <div class="skills-grid" id="skillsGrid"></div>
+            <p class="skills-counter" id="skillsCounter">0 de 3 selecionadas</p>
+          </div>
+        </div>
+
+        <!-- BLOCO C -->
+        <div class="bloco">
+          <div class="bloco-header">
+            <div class="bloco-numero">C</div>
+            <div>
+              <div class="bloco-titulo">Candidato ideal</div>
+              <div class="bloco-desc">Defina os critérios para encontrar a pessoa certa</div>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">C1. Quais conhecimentos, habilidades e diferenciais são esperados? *</label>
+            <textarea id="c1" class="form-control" rows="6"
+              placeholder="Considere preencher para cada categoria:&#10;&#10;Softwares e ferramentas: ex: Excel avançado, Salesforce, Google Workspace&#10;Habilidades técnicas: ex: análise de dados, gestão de contratos&#10;Habilidades comportamentais: ex: comunicação clara, autonomia&#10;Diferenciais de perfil: ex: experiência com franquias, inglês intermediário&#10;&#10;Separe o que é desejável do que é diferencial." required></textarea>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">C2. Quais formações acadêmicas são válidas para essa vaga? *</label>
+            <textarea id="c2" class="form-control" rows="2"
+              placeholder="Liste cursos, áreas ou escolaridade aceitos. Indique se a graduação é obrigatória ou desejável." required></textarea>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">C3. Qual o tempo mínimo de experiência necessário? *</label>
+            <textarea id="c3" class="form-control" rows="2"
+              placeholder="Ex: mínimo 2 anos atuando em gestão de operações. Seja específico sobre a função." required></textarea>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">C4. Há algum requisito eliminatório?</label>
+            <textarea id="c4" class="form-control" rows="2"
+              placeholder="Ex: precisa morar em Salvador, disponibilidade para viagens, CNH obrigatória, contrato PJ"></textarea>
+            <p class="form-hint">Requisitos que eliminam o candidato imediatamente se não atendidos.</p>
+          </div>
+        </div>
+
+        <!-- BLOCO D -->
+        <div class="bloco">
+          <div class="bloco-header">
+            <div class="bloco-numero">D</div>
+            <div>
+              <div class="bloco-titulo">Estrutura do processo seletivo</div>
+              <div class="bloco-desc">Defina quem participa e como será o processo</div>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">D1. Quem será o responsável pela entrevista técnica e pela entrevista final? *</label>
+            <textarea id="d1" class="form-control" rows="2"
+              placeholder="Informe nome e cargo de cada responsável — podem ser pessoas diferentes." required></textarea>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">D2a. Responsável pela correção do desafio técnico</label>
+            <input type="text" id="d2a" class="form-control"
+              placeholder="Nome e cargo do responsável">
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">D2b. Prazo para o candidato realizar o desafio (em dias)</label>
+            <input type="number" id="d2b" class="form-control" min="1" max="30"
+              placeholder="Ex: 5">
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">D2c. Link do desafio técnico</label>
+            <input type="url" id="d2c" class="form-control"
+              placeholder="https://...">
+            <div class="alerta-ia">
+              ⚠️ <span><strong>IA First:</strong> o desafio técnico deve refletir o uso de inteligência artificial como ferramenta de trabalho — valor inegociável da Seazone.</span>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">D3. Formato da avaliação prática <span style="font-weight:400;color:var(--text-secondary)">(opcional)</span></label>
+            <div class="radio-group">
+              <label class="radio-option" onclick="selecionarRadio(this, 'd3', 'assíncrono')">
+                <input type="radio" name="d3" value="assíncrono">
+                <div>
+                  <div class="radio-label">📋 Desafio assíncrono</div>
+                  <div class="radio-desc">Candidato recebe o case e entrega em X dias</div>
+                </div>
+              </label>
+              <label class="radio-option" onclick="selecionarRadio(this, 'd3', 'live_case')">
+                <input type="radio" name="d3" value="live_case">
+                <div>
+                  <div class="radio-label">🎥 Live Case</div>
+                  <div class="radio-desc">Avaliação ao vivo, em tempo real com o gestor</div>
+                </div>
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <button type="submit" id="btnEnviar" class="btn btn-primary btn-block btn-lg" style="margin-bottom: 32px;">
+          Enviar formulário
+        </button>
+
+      </form>
+    </div>
+  </div>
+
+  <div id="sucesso" class="sucesso-wrap" style="display: none;">
+    <div class="sucesso-card">
+      <div class="sucesso-icon">🎉</div>
+      <h2>Formulário enviado!</h2>
+      <p>Suas respostas foram salvas com sucesso. O time de RH já pode acessar as informações e entrará em contato em breve.</p>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="config.js"></script>
+  <script>
+    const SKILLS = [
+      'Empatia e Escuta Ativa', 'Clareza e Objetividade', 'Ambição e Confiança',
+      'Responsabilização', 'Trabalho em Equipe', 'Adaptabilidade',
+      'Resiliência', 'Consistência', 'Pensamento Analítico',
+      'Negociação', 'Organização', 'Foco no Resultado',
+      'Pensamento de Dono', 'Pensar Fora da Caixa'
+    ];
+
+    let skillsSelecionadas = [];
+    let vagaId = null;
+
+    // Montar grid de skills
+    const grid = document.getElementById('skillsGrid');
+    SKILLS.forEach(skill => {
+      const item = document.createElement('label');
+      item.className = 'skill-item';
+      item.innerHTML = `<input type="checkbox" value="${skill}"> ${skill}`;
+      item.querySelector('input').addEventListener('change', function() {
+        atualizarSkills(skill, this.checked, item);
+      });
+      grid.appendChild(item);
+    });
+
+    function atualizarSkills(skill, checked, item) {
+      if (checked) {
+        if (skillsSelecionadas.length >= 3) {
+          item.querySelector('input').checked = false;
+          return;
+        }
+        skillsSelecionadas.push(skill);
+        item.classList.add('checked');
+      } else {
+        skillsSelecionadas = skillsSelecionadas.filter(s => s !== skill);
+        item.classList.remove('checked');
+      }
+
+      const counter = document.getElementById('skillsCounter');
+      counter.textContent = `${skillsSelecionadas.length} de 3 selecionadas`;
+      counter.className = 'skills-counter';
+      if (skillsSelecionadas.length === 3) {
+        counter.classList.add('completo');
+        // Desabilitar os não selecionados
+        grid.querySelectorAll('.skill-item').forEach(el => {
+          if (!el.classList.contains('checked')) el.classList.add('disabled');
+        });
+      } else {
+        grid.querySelectorAll('.skill-item').forEach(el => el.classList.remove('disabled'));
+      }
+    }
+
+    function selecionarRadio(label, nome, valor) {
+      document.querySelectorAll(`input[name="${nome}"]`).forEach(r => {
+        r.closest('.radio-option').classList.remove('selected');
+      });
+      label.classList.add('selected');
+
+      if (nome === 'a4' && valor === 'substituicao') {
+        document.getElementById('a5grupo').style.display = 'block';
+      } else if (nome === 'a4') {
+        document.getElementById('a5grupo').style.display = 'none';
+      }
+    }
+
+    // Carregar vaga pelo token
+    async function init() {
+      const params = new URLSearchParams(window.location.search);
+      const token = params.get('token');
+
+      if (!token) {
+        document.getElementById('loading').style.display = 'none';
+        document.getElementById('tokenInvalido').style.display = 'flex';
+        return;
+      }
+
+      const { data: vaga, error } = await db
+        .from('vagas')
+        .select('*')
+        .eq('token_gestor', token)
+        .single();
+
+      document.getElementById('loading').style.display = 'none';
+
+      if (error || !vaga) {
+        document.getElementById('tokenInvalido').style.display = 'flex';
+        return;
+      }
+
+      vagaId = vaga.id;
+
+      // Verificar se já preencheu
+      const { data: form } = await db
+        .from('formulario_gestor')
+        .select('id')
+        .eq('vaga_id', vagaId)
+        .single();
+
+      if (form) {
+        document.getElementById('jaPreenchido').style.display = 'flex';
+        return;
+      }
+
+      document.getElementById('subtituloVaga').textContent = vaga.titulo;
+      document.getElementById('formulario').style.display = 'block';
+    }
+
+    // Enviar formulário
+    document.getElementById('formAlinhamento').addEventListener('submit', async function(e) {
+      e.preventDefault();
+
+      const a4 = document.querySelector('input[name="a4"]:checked');
+      const a6 = document.querySelector('input[name="a6"]:checked');
+      const b3 = document.querySelector('input[name="b3"]:checked');
+      const d3 = document.querySelector('input[name="d3"]:checked');
+
+      if (!a4 || !a6 || !b3) {
+        alert('Por favor, preencha todos os campos obrigatórios.');
+        return;
+      }
+
+      if (skillsSelecionadas.length !== 3) {
+        alert('Por favor, selecione exatamente 3 soft skills.');
+        return;
+      }
+
+      const btn = document.getElementById('btnEnviar');
+      btn.disabled = true;
+      btn.innerHTML = 'Enviando...';
+
+      const payload = {
+        vaga_id: vagaId,
+        a1_estrutura_time: document.getElementById('a1').value,
+        a2_objetivos_time: document.getElementById('a2').value,
+        a3_desafio_time: document.getElementById('a3').value,
+        a4_motivo_abertura: a4.value,
+        a5_substituicao: document.getElementById('a5').value || null,
+        a6_confidencial: a6.value === 'sim',
+        b1_problema: document.getElementById('b1').value,
+        b2_funcoes: document.getElementById('b2').value,
+        b3_senioridade: b3.value,
+        b4_skills: skillsSelecionadas,
+        c1_habilidades: document.getElementById('c1').value,
+        c2_formacoes: document.getElementById('c2').value,
+        c3_experiencia: document.getElementById('c3').value,
+        c4_eliminatorios: document.getElementById('c4').value || null,
+        d1_responsavel_entrevista: document.getElementById('d1').value,
+        d2a_responsavel_desafio: document.getElementById('d2a').value || null,
+        d2b_prazo_desafio: parseInt(document.getElementById('d2b').value) || null,
+        d2c_link_desafio: document.getElementById('d2c').value || null,
+        d3_formato: d3 ? d3.value : null
+      };
+
+      const { error: errForm } = await db.from('formulario_gestor').insert(payload);
+
+      if (errForm) {
+        alert('Erro ao enviar. Tente novamente.');
+        btn.disabled = false;
+        btn.innerHTML = 'Enviar formulário';
+        return;
+      }
+
+      // Atualizar status da vaga
+      await db.from('vagas').update({ status: 'formulario_preenchido' }).eq('id', vagaId);
+
+      document.getElementById('formulario').style.display = 'none';
+      document.getElementById('sucesso').style.display = 'flex';
+    });
+
+    init();
+  </script>
+</body>
+</html>

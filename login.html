@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login — Alinhamento IA</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="login-wrap">
+    <div class="login-card">
+      <div class="login-logo">
+        <img src="logo-seazone.png" alt="Seazone" style="height: 48px; margin-bottom: 8px;">
+        <p>Alinhamento IA — Time de Pessoas</p>
+      </div>
+
+      <form id="formLogin">
+        <div class="form-group">
+          <label class="form-label">Senha de acesso</label>
+          <input type="password" id="senha" class="form-control" placeholder="Digite a senha" autofocus>
+          <p id="erroSenha" class="form-hint" style="color: var(--danger); display: none;">Senha incorreta. Tente novamente.</p>
+        </div>
+        <button type="submit" class="btn btn-primary btn-block btn-lg">Entrar</button>
+      </form>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="config.js"></script>
+  <script>
+    if (sessionStorage.getItem('rh_autenticado')) {
+      window.location.href = 'index.html';
+    }
+
+    document.getElementById('formLogin').addEventListener('submit', function(e) {
+      e.preventDefault();
+      const senha = document.getElementById('senha').value;
+      if (senha === SENHA_DASHBOARD) {
+        sessionStorage.setItem('rh_autenticado', 'true');
+        window.location.href = 'index.html';
+      } else {
+        document.getElementById('erroSenha').style.display = 'block';
+        document.getElementById('senha').classList.add('error');
+      }
+    });
+  </script>
+</body>
+</html>

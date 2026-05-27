@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Métricas — Alinhamento IA</title>
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    .metricas-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+    .metrica-card {
+      background: white;
+      border-radius: var(--radius);
+      padding: 24px 20px;
+      box-shadow: var(--shadow);
+      text-align: center;
+    }
+    .metrica-numero {
+      font-size: 40px;
+      font-weight: 700;
+      color: var(--primary);
+      line-height: 1;
+      margin-bottom: 8px;
+    }
+    .metrica-label {
+      font-size: 13px;
+      color: var(--text-secondary);
+      font-weight: 500;
+    }
+    .metrica-card.destaque {
+      background: var(--primary);
+    }
+    .metrica-card.destaque .metrica-numero,
+    .metrica-card.destaque .metrica-label {
+      color: white;
+    }
+    .barra-wrap {
+      margin-bottom: 12px;
+    }
+    .barra-label {
+      display: flex;
+      justify-content: space-between;
+      font-size: 13px;
+      margin-bottom: 4px;
+      color: var(--text);
+    }
+    .barra-fundo {
+      background: var(--border);
+      border-radius: 4px;
+      height: 10px;
+      overflow: hidden;
+    }
+    .barra-fill {
+      height: 10px;
+      border-radius: 4px;
+      background: var(--primary);
+      transition: width 0.5s ease;
+    }
+    .barra-fill.amarelo { background: var(--warning); }
+    .barra-fill.azul { background: var(--info); }
+    .barra-fill.cinza { background: var(--text-secondary); }
+    .tempo-medio {
+      font-size: 32px;
+      font-weight: 700;
+      color: var(--info);
+    }
+  </style>
+</head>
+<body>
+
+  <header class="header">
+    <a href="index.html" class="header-logo"><img src="logo-seazone.png" alt="Seazone"></a>
+    <div class="header-nav">
+      <a href="index.html" class="btn btn-secondary btn-sm">← Voltar</a>
+    </div>
+  </header>
+
+  <div class="container">
+    <div class="page-header">
+      <div>
+        <h1 class="page-title">Métricas</h1>
+        <p class="page-subtitle">Visão geral do processo de alinhamento de vagas</p>
+      </div>
+      <button class="btn btn-secondary" onclick="carregarMetricas()">🔄 Atualizar</button>
+    </div>
+
+    <div id="loading" class="card" style="text-align:center; padding: 40px;">
+      <div class="loading">Carregando métricas...</div>
+    </div>
+
+    <div id="conteudo" style="display: none;">
+
+      <!-- Totais -->
+      <div class="metricas-grid" id="gridTotais"></div>
+
+      <!-- Distribuição por status -->
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">Distribuição por status</span>
+          </div>
+          <div class="card-body" id="distribuicaoStatus"></div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">Tempo médio de resposta do gestor</span>
+          </div>
+          <div class="card-body" style="text-align: center; padding: 32px 20px;">
+            <div class="tempo-medio" id="tempoMedio">—</div>
+            <div style="font-size: 13px; color: var(--text-secondary); margin-top: 8px;">
+              dias entre criação da vaga e preenchimento pelo gestor
+            </div>
+            <div style="font-size: 12px; color: var(--text-secondary); margin-top: 16px;" id="tempoObs"></div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Vagas recentes -->
+      <div class="card" style="margin-top: 16px;">
+        <div class="card-header">
+          <span class="card-title">Vagas ativas</span>
+        </div>
+        <div class="card-body" id="vagasRecentes"></div>
+      </div>
+
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="config.js"></script>
+  <script>
+    verificarAcesso();
+
+    async function carregarMetricas() {
+      document.getElementById('loading').style.display = 'block';
+      document.getElementById('conteudo').style.display = 'none';
+
+      const { data: vagas } = await db
+        .from('vagas')
+        .select('*, formulario_gestor(preenchido_em)')
+        .order('criado_em', { ascending: false });
+
+      if (!vagas) return;
+
+      const total = vagas.filter(v => v.status !== 'arquivada').length;
+      const aguardando = vagas.filter(v => v.status === 'aguardando_gestor').length;
+      const preenchidas = vagas.filter(v => v.status === 'formulario_preenchido').length;
+      const emProcesso = vagas.filter(v => v.status === 'em_processo').length;
+      const encerradas = vagas.filter(v => v.status === 'encerrada').length;
+      const arquivadas = vagas.filter(v => v.status === 'arquivada').length;
+      const ativas = vagas.filter(v => v.status !== 'arquivada' && v.status !== 'encerrada').length;
+
+      // Grid de totais
+      document.getElementById('gridTotais').innerHTML = `
+        <div class="metrica-card destaque">
+          <div class="metrica-numero">${total}</div>
+          <div class="metrica-label">Total de vagas</div>
+        </div>
+        <div class="metrica-card">
+          <div class="metrica-numero" style="color: var(--warning)">${aguardando}</div>
+          <div class="metrica-label">Aguardando gestor</div>
+        </div>
+        <div class="metrica-card">
+          <div class="metrica-numero">${preenchidas}</div>
+          <div class="metrica-label">Formulário preenchido</div>
+        </div>
+        <div class="metrica-card">
+          <div class="metrica-numero" style="color: var(--info)">${emProcesso}</div>
+          <div class="metrica-label">Em processo</div>
+        </div>
+        <div class="metrica-card">
+          <div class="metrica-numero" style="color: var(--text-secondary)">${encerradas}</div>
+          <div class="metrica-label">Encerradas</div>
+        </div>
+        <div class="metrica-card">
+          <div class="metrica-numero" style="color: var(--text-secondary)">${arquivadas}</div>
+          <div class="metrica-label">Arquivadas</div>
+        </div>
+      `;
+
+      // Distribuição
+      const itens = [
+        { label: 'Aguardando gestor', valor: aguardando, total, classe: 'amarelo' },
+        { label: 'Formulário preenchido', valor: preenchidas, total, classe: '' },
+        { label: 'Em processo', valor: emProcesso, total, classe: 'azul' },
+        { label: 'Encerradas', valor: encerradas, total, classe: 'cinza' },
+      ];
+
+      document.getElementById('distribuicaoStatus').innerHTML = itens.map(i => {
+        const pct = total > 0 ? Math.round((i.valor / total) * 100) : 0;
+        return `
+          <div class="barra-wrap">
+            <div class="barra-label">
+              <span>${i.label}</span>
+              <span><strong>${i.valor}</strong> (${pct}%)</span>
+            </div>
+            <div class="barra-fundo">
+              <div class="barra-fill ${i.classe}" style="width: ${pct}%"></div>
+            </div>
+          </div>`;
+      }).join('');
+
+      // Tempo médio
+      const comPreenchimento = vagas.filter(v =>
+        v.formulario_gestor?.preenchido_em && v.criado_em
+      );
+
+      if (comPreenchimento.length > 0) {
+        const tempos = comPreenchimento.map(v => {
+          const criado = new Date(v.criado_em);
+          const preenchido = new Date(v.formulario_gestor.preenchido_em);
+          return (preenchido - criado) / (1000 * 60 * 60 * 24);
+        });
+        const media = tempos.reduce((a, b) => a + b, 0) / tempos.length;
+        document.getElementById('tempoMedio').textContent = media.toFixed(1);
+        document.getElementById('tempoObs').textContent =
+          `Calculado com base em ${comPreenchimento.length} vaga${comPreenchimento.length > 1 ? 's' : ''} preenchida${comPreenchimento.length > 1 ? 's' : ''}`;
+      } else {
+        document.getElementById('tempoMedio').textContent = '—';
+        document.getElementById('tempoObs').textContent = 'Nenhuma vaga preenchida ainda';
+      }
+
+      // Vagas ativas
+      const vagasAtivas = vagas.filter(v => v.status !== 'arquivada' && v.status !== 'encerrada');
+      if (vagasAtivas.length === 0) {
+        document.getElementById('vagasRecentes').innerHTML =
+          '<p style="color: var(--text-secondary); font-size: 13px;">Nenhuma vaga ativa no momento.</p>';
+      } else {
+        document.getElementById('vagasRecentes').innerHTML = `
+          <table class="vagas-table">
+            <thead>
+              <tr><th>Vaga</th><th>Status</th><th>Criada em</th><th></th></tr>
+            </thead>
+            <tbody>
+              ${vagasAtivas.map(v => `
+                <tr>
+                  <td><div class="vaga-titulo">${v.titulo}</div></td>
+                  <td><span class="badge ${STATUS_COR[v.status]}">${STATUS_LABEL[v.status]}</span></td>
+                  <td style="font-size:13px; color: var(--text-secondary)">${formatarData(v.criado_em)}</td>
+                  <td><a href="vaga.html?id=${v.id}" class="btn btn-primary btn-sm">Abrir</a></td>
+                </tr>`).join('')}
+            </tbody>
+          </table>`;
+      }
+
+      document.getElementById('loading').style.display = 'none';
+      document.getElementById('conteudo').style.display = 'block';
+    }
+
+    carregarMetricas();
+  </script>
+</body>
+</html>
